@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 class StudentProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentProject
-        fields = ['CompleteStatue', 'CompleteDate', 'created']
+        fields = ['CompleteStatue','created','modify_date']
 
 
 class MuseumSerializer(serializers.ModelSerializer): 
@@ -20,7 +20,7 @@ class MuseumSerializer(serializers.ModelSerializer):
 class WatchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Watch
-        fields = ['stampStatus', 'create_Stamp_date', 'quiz1_answer','quiz2_answer', 'quiz3_answer']
+        fields = ['stampStatus', 'quiz1_answer','quiz2_answer', 'quiz3_answer']
 
 
 class userSerializer(serializers.ModelSerializer):

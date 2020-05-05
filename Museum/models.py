@@ -27,8 +27,8 @@ class StudentProject(models.Model):
 
 
 class Watch(models.Model):
-    user = models.ForeignKey(StudentProject, on_delete=models.CASCADE,null=True)  # 만든 유저
-    museum = models.OneToOneField(Museum, on_delete=models.CASCADE,null=True)     # 해당 박물관
+    project = models.ForeignKey(StudentProject, on_delete=models.CASCADE,null=True)  # 만든 유저
+    museum = models.ForeignKey(Museum, on_delete=models.CASCADE,null=True)     # 해당 박물관
 
     stampStatus = models.BooleanField(default=False)                                 # 스탬프 상태
  #   create_Stamp_date = models.DateTimeField(Null=True)                              # 스팸프 장소

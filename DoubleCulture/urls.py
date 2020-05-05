@@ -24,6 +24,7 @@ urlpatterns = [
     path('singUp/',views.singUp),
     path('login/',views.MainPageUserData),
     path('museum/',views.viewMuseum),
+    path('setmuseum/',views.setMuseum),
     path('overcheck/',views.id_overlap_check),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 

@@ -15,9 +15,20 @@ def viewMuseum(request):
         data = JSONParser().parse(request)
         museum_number = data['museum_number']
         museum = Museum.objects.get(museum_number=museum_number)
-        museumSeri = MuseumSerializer(museum, many=True)
+        museumSeri = MuseumSerializer(museum)
 
         return JsonResponse(museumSeri.data, safe=False)
+
+@csrf_exempt
+def setMuseum(request):
+
+    if request.method == 'POST':
+        data = JSONParser().parse(request)
+        serializer = MuseumSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data, status=201)
+        return JsonResponse(serializer.errors, status=400)
 
 
 @csrf_exempt
@@ -60,9 +71,10 @@ def singUp(request):
         else:
             createuser = User.objects.create_user(username=username, password=password, email=email, first_name=first_name, last_name=last_name)
             p = StudentProject(user = createuser)
+            p.save()
             for a in Museum.objects.all():
-                Watch.objects.create(user = createuser, museum = a)
-
+                w = Watch(project=p, museum=a)
+                w.save()
             return JsonResponse({'message': '회원가입 완료'}, status=200)
 
 @csrf_exempt
@@ -77,9 +89,16 @@ def MainPageUserData(request):
         if loginStatus :
             # 로그인 성공
             user = User.objects.get(username=username)
-            userSeri = userSerializer(user)      # user 정보
+            userSeri = userSerializer(user)    # user 정보
 
-            return JsonResponse(userSeri.data)
+            project = user.studentproject
+            projectSeri = StudentProjectSerializer(project)
+            watch_set = project.watch_set
+            watchListseri = WatchSerializer(watch_set, many=True)
+
+            #넘겨줄 유저정보를 여기에 추가한다.
+            return JsonResponse(userSeri.data + projectSeri.data, safe=False)
+
         else :
             # 로그인 실패
             return JsonResponse({'result': 'fail'}, status=200)
