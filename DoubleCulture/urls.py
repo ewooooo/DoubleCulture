@@ -22,10 +22,11 @@ from Museum import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('singUp/',views.singUp),
-    path('login/',views.MainPageUserData),
-    path('museum/',views.viewMuseum),
-    path('setmuseum/',views.setMuseum),
+    path('login/',views.UserData),
+    path('museum/',views.MuseumData),
+    path('usermuseum/',views.UserMuseum),
     path('overcheck/',views.id_overlap_check),
+    path('stemp/',views.CheckSTEMP),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 
 ]

@@ -6,21 +6,22 @@ from .models import *
 from .serializers import *
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
-
+from django.core.exceptions import ObjectDoesNotExist
 # Create your views here.
 
 @csrf_exempt
-def viewMuseum(request):
+def MuseumData(request):
     if request.method == 'GET':
         data = JSONParser().parse(request)
         museum_number = data['museum_number']
-        museum = Museum.objects.get(museum_number=museum_number)
+        try:
+            museum = Museum.objects.get(museum_number=museum_number)
+        except ObjectDoesNotExist:
+            return JsonResponse({'result': 'museum_number error'}, safe=False)
+
         museumSeri = MuseumSerializer(museum)
 
         return JsonResponse(museumSeri.data, safe=False)
-
-@csrf_exempt
-def setMuseum(request):
 
     if request.method == 'POST':
         data = JSONParser().parse(request)
@@ -29,6 +30,8 @@ def setMuseum(request):
             serializer.save()
             return JsonResponse(serializer.data, status=201)
         return JsonResponse(serializer.errors, status=400)
+
+
 
 
 @csrf_exempt
@@ -78,8 +81,8 @@ def singUp(request):
             return JsonResponse({'message': '회원가입 완료'}, status=200)
 
 @csrf_exempt
-def MainPageUserData(request):
-    # 로그인 하면 셰션 리턴
+def UserData(request):
+
     if request.method == 'GET':
         data = JSONParser().parse(request)
         username = data['username']
@@ -91,64 +94,121 @@ def MainPageUserData(request):
             user = User.objects.get(username=username)
             userSeri = userSerializer(user)    # user 정보
 
-            project = user.studentproject
-            projectSeri = StudentProjectSerializer(project)
-            watch_set = project.watch_set
-            watchListseri = WatchSerializer(watch_set, many=True)
-
-            #넘겨줄 유저정보를 여기에 추가한다.
-            return JsonResponse(userSeri.data + projectSeri.data, safe=False)
+            return JsonResponse(userSeri.data, safe=False)
 
         else :
             # 로그인 실패
             return JsonResponse({'result': 'fail'}, status=200)
 
 
-#
-# def CheckSTEMP(request):
-#     if request.method == 'POST':
-#         data = JSONParser().parse(request)
-#         username = data['username']
-#         password = data['password']
-#
-#         loginStatus = authenticate(username=username, password=password)
-#         if loginStatus :
-#             # 로그인 성공
-#             museumID = data['QRData']
-#             GPSstate = data['GPSstate']
-#
-#             #GPS가 맞는지 확인
-#             StempTest = True
-#
-#             if StempTest:
-#                 # user -> 박물관아이디로 -> 스탬프 정보 수정.
-#
-#             else:
-#                 return JsonResponse({'result': 'GPS 지역 위반'}, status=200)
-#
-#          else:
-#             # 로그인 실패
-#             return JsonResponse({'result': '로그인 실패'}, status=200)
-#
+@csrf_exempt
+def UserMuseum(request):
+
+    if request.method == 'GET':
+        data = JSONParser().parse(request)
+        username = data['username']
+        password = data['password']
+        museum_number = data['museum_number']
+
+        loginStatus = authenticate(username=username, password=password)
+        if loginStatus:
+            # 로그인 성공
+            user = User.objects.get(username=username)
+            userSeri = userSerializer(user)    # user 정보
+
+            project = user.studentproject
+            projectSeri = StudentProjectSerializer(project)
+            watch_set = project.watch_set
+            try:
+                museumObj = Museum.objects.get(museum_number=museum_number)
+                watch = watch_set.get(museum=museumObj)
+            except ObjectDoesNotExist:
+                return JsonResponse({'result': 'museum_number error'}, safe=False)
+
+            watchListseri = WatchSerializer(watch)
+
+            return JsonResponse(watchListseri.data, safe=False)
+
+        else :
+            # 로그인 실패
+            return JsonResponse({'result': 'fail'}, status=200)
+
+    if request.method == 'PUT':
+        data = JSONParser().parse(request)
+        username = data['username']
+        password = data['password']
+        museum_number = data['museum_number']
+        quizNumber = data['quiznumber']
+        quizAnswer = data['quizanswer']
+
+        loginStatus = authenticate(username=username, password=password)
+
+        if loginStatus:
+            # 로그인 성공
+            user = User.objects.get(username=username)
+
+            project = user.studentproject
+            watch_set = project.watch_set
+            try:
+                museumObj = Museum.objects.get(museum_number=museum_number)
+                watch = watch_set.get(museum=museumObj)
+            except ObjectDoesNotExist:
+                return JsonResponse({'result': 'museum_number error'}, safe=False)
+            if(quizNumber == '1'):
+                watch.quiz1_answer = quizAnswer
+                watch.save()
+            elif(quizNumber == '2'):
+                watch.quiz2_answer = quizAnswer
+                watch.save()
+            elif (quizNumber == '3'):
+                watch.quiz3_answer = quizAnswer
+                watch.save()
+
+            watchListseri = WatchSerializer(watch)
+            return JsonResponse(watchListseri.data, safe=False)
+
+        else :
+            # 로그인 실패
+            return JsonResponse({'result': 'fail'}, status=200)
 
 
+@csrf_exempt
+def CheckSTEMP(request):
+    if request.method == 'POST':
+        data = JSONParser().parse(request)
+        username = data['username']
+        password = data['password']
 
+        museumID = data['QRData']
+        GPSstate = data['GPSstate']
 
+        loginStatus = authenticate(username=username, password=password)
+        if loginStatus :
+            user = User.objects.get(username=username)
 
+            project = user.studentproject
+            watch_set = project.watch_set
 
+            try:
+                museumObj = Museum.objects.get(museum_number=museumID)
+                watch = watch_set.get(museum=museumObj)
+            except ObjectDoesNotExist:
+                return JsonResponse({'result': 'museum_number error'}, safe=False)
 
+            #GPS가 맞는지 확인
+            StempTest = True #test 무조건 맞다.
 
+            if StempTest:
+                watch.stampStatus = True
+                watch.save()
+                watchListseri = WatchSerializer(watch)
+                return JsonResponse(watchListseri.data, safe=False)
 
-
-
-
-
-
-
-
-
-
-
+            else:
+                return JsonResponse({'result': 'GPS 지역 위반'}, status=200)
+        else:
+            # 로그인 실패
+            return JsonResponse({'result': '로그인 실패'}, status=200)
 
 
 
