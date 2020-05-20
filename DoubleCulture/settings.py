@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'Museum',
     'import_export',
+    'django_db_views',
+    'rangefilter',
 ]
 
 MIDDLEWARE = [
