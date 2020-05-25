@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django_db_views.db_view import DBView #pip install django-db-views , installed app='django_db_views',
+
 
 # Create your models here.
 
@@ -41,3 +43,12 @@ class Watch(models.Model):
 
     class Meta:
        ordering = ['modify_date']
+
+class Total(DBView):
+
+    view_definition = """
+    select * from Museum_Watch
+    """
+    class Meta:
+        managed = False
+        db_table = "Total"
