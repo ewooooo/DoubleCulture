@@ -9,7 +9,7 @@ from django.contrib.auth.models import User
 class StudentProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentProject
-        fields = ['CompleteStatue','created','modify_date']
+        fields = ['CompleteState','created','modify_date']
 
 
 class MuseumSerializer(serializers.ModelSerializer): 

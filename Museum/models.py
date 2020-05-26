@@ -19,33 +19,39 @@ class Museum(models.Model):
 
 class StudentProject(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    CompleteStatue = models.BooleanField(default=False) # 이수 여부
+
+    CompleteState = models.BooleanField(default=False)  # 이수 여부
+    # Museum1_State = models.BooleanField(default=False)  # 이수 여부
+    # Museum2_State = models.BooleanField(default=False)  # 이수 여부
+    # Museum3_State = models.BooleanField(default=False)  # 이수 여부
 
     created = models.DateTimeField(auto_now_add=True)
-    modify_date = models.DateField(auto_now=True)  # 수정일
+    modify_date = models.DateField(auto_now=True)           # 수정일
 
     class Meta:
         ordering = ['created']
 
 
 class Watch(models.Model):
-    project = models.ForeignKey(StudentProject, on_delete=models.CASCADE,null=True)  # 만든 유저
-    museum = models.ForeignKey(Museum, on_delete=models.CASCADE,null=True)     # 해당 박물관
+    project = models.ForeignKey(StudentProject, on_delete=models.CASCADE,null=True)     # 만든 유저
+    museum = models.ForeignKey(Museum, on_delete=models.CASCADE,null=True)              # 해당 박물관
 
-    stampStatus = models.BooleanField(default=False)                                 # 스탬프 상태
- #   create_Stamp_date = models.DateTimeField(Null=True)                              # 스팸프 장소
-    quiz1_answer = models.CharField(max_length=50, default=" ")                      # 퀴즈에 대한 답변
+    stampStatus = models.BooleanField(default=False)                                    # 스탬프 상태
+    create_Stamp_date = models.DateField(null=True)
+    create_Stamp_time = models.TimeField(null=True)                                     # 스팸프 장소
+
+    quiz1_answer = models.CharField(max_length=50, default=" ")                         # 퀴즈에 대한 답변
     quiz2_answer = models.CharField(max_length=50, default=" ")
     quiz3_answer = models.CharField(max_length=50, default=" ")
 
-    create_date = models.DateField(auto_now_add=True,null=True)                   # 생성일
-    modify_date = models.DateField(auto_now=True)                       # 수정일
+    modify_date = models.DateField(auto_now=True)                                       # 수정일
 
     class Meta:
        ordering = ['modify_date']
 
-class Total(DBView):
 
+class Total(DBView):
+    # view_definition 쿼리문 작성하면된다.
     view_definition = """
     select * from Museum_Watch
     """

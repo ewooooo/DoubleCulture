@@ -4,9 +4,9 @@ from import_export.admin import ExportActionModelAdmin, ImportExportMixin, Impor
 from rangefilter.filter import DateRangeFilter, DateTimeRangeFilter   # pip install django-admin-rangefilter, installed app ='rangefilter',
 
 class StudentProjectAdmin(ImportExportMixin, admin.ModelAdmin):
-    list_display = ['user', 'CompleteStatue','created','modify_date']
+    list_display = ['user', 'CompleteState','created','modify_date']
     search_fields = ['created', 'user__username']
-    list_filter = ('CompleteStatue',) 
+    list_filter = ('CompleteState',)
     pass
 
 class MuseumAdmin(ImportExportMixin, admin.ModelAdmin):
