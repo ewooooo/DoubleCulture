@@ -1,0 +1,4 @@
+DoubleCulture/__pycache__/
+Museum/__pycache__/
+.idea/
+db.sqlite3
