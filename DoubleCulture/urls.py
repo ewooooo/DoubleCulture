@@ -17,16 +17,14 @@ from django.conf.urls import url, include
 from django.contrib import admin
 from django.urls import path
 from Museum import views
-
+from rest_framework_jwt.views import obtain_jwt_token, verify_jwt_token, refresh_jwt_token
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('singUp/',views.singUp),
-    path('login/',views.UserData),
-    path('museum/',views.MuseumData),
-    path('usermuseum/',views.UserMuseum),
-    path('overcheck/',views.id_overlap_check),
-    path('stemp/',views.CheckSTEMP),
-    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
+    path('app/', include('Museum.urls')),
+    path('api/token/', obtain_jwt_token),
+    path('api/token/verify/', verify_jwt_token),
+    path('api/token/refresh/', refresh_jwt_token),
+    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 
 ]

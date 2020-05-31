@@ -1,41 +1,68 @@
 from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+#from django.http import HttpResponse, JsonResponse
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes, authentication_classes  # JWT 데코레이터
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated, AllowAny   # 로그인 여부를 확인할 때 사용
+from rest_framework_jwt.authentication import JSONWebTokenAuthentication    # JWT 인증을 확인하기 위해 사용
+
+# from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
+
 from .models import *
 from .serializers import *
-from django.contrib.auth.models import User
-from django.contrib.auth import authenticate
-from django.core.exceptions import ObjectDoesNotExist
+
+from django.contrib.auth.models import User     # 회원가입 필요
+# from django.contrib.auth import authenticate    # 아이디 비번 확인을 위해 사용
+
+#from django.core.exceptions import ObjectDoesNotExist   # object 접근 에러처리
+
+
 # Create your views here.
 
-@csrf_exempt
-def MuseumData(request):
+# @api_view(['GET','POST'])
+# @permission_classes((IsAuthenticated, ))
+# @authentication_classes((JSONWebTokenAuthentication,))
+
+
+@api_view(['GET'])
+@permission_classes((AllowAny, ))  #제한 없이 접근 가능
+def HelloServer(request):
     if request.method == 'GET':
-        data = JSONParser().parse(request)
-        museum_number = data['museum_number']
+        return Response("hello Test!")
+
+
+# @csrf_exempt
+@api_view(['GET'])
+@permission_classes((AllowAny, ))  #제한 없이 접근 가능
+def MuseumData(request, pk):
+    if request.method == 'GET':
+        # data = JSONParser().parse(request)
+        # museum_number = data['museum_number']
         try:
-            museum = Museum.objects.get(museum_number=museum_number)
-        except ObjectDoesNotExist:
-            return JsonResponse({'result': 'museum_number error'}, safe=False)
-
-        museumSeri = MuseumSerializer(museum)
-
-        return JsonResponse(museumSeri.data, safe=False)
-
-    if request.method == 'POST':
-        data = JSONParser().parse(request)
-        serializer = MuseumSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return JsonResponse(serializer.data, status=201)
-        return JsonResponse(serializer.errors, status=400)
+            museum = institution.objects.get(pk=pk)
+        except institution.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
 
+        serializer = institutionSerializer(museum)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    # 박물관 정보를 설정하기 위한 기능이지만 관리자 페이지에서 할것이므로 비활성
+    # if request.method == 'POST':
+    #     data = JSONParser().parse(request)
+    #     serializer = MuseumSerializer(data=data)
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return JsonResponse(serializer.data, status=201)
+    #     return JsonResponse(serializer.errors, status=400)
 
 
-@csrf_exempt
-def id_overlap_check(request):
+@api_view(['GET','POST'])
+@permission_classes((AllowAny, ))  #제한 없이 접근 가능
+def singUp(request):
     if request.method == 'GET':
         data = JSONParser().parse(request)
         username = data['username']
@@ -46,17 +73,10 @@ def id_overlap_check(request):
             # 중복 검사 성공
             user = None
         if user is None:
-            overlap = "pass"
+            return Response("true",status=status.HTTP_200_OK)
         else:
-            overlap = "fail"
-        context = {'overlap': overlap}
-        return JsonResponse(context)
+            return Response("fail",status=status.HTTP_200_OK)
 
-
-@csrf_exempt
-def singUp(request):
-    if request.method == 'GET':
-        return JsonResponse({'message': '회원가입 완료'}, status=200)
     if request.method == 'POST':
         data = JSONParser().parse(request)
 
@@ -68,156 +88,200 @@ def singUp(request):
         last_name = data['last_name']
 
         if not(username and password and re_password and email and first_name and last_name) :
-            return JsonResponse({'error': '빈칸'}, status=200)
+            return Response({'error': '빈칸'}, status=status.HTTP_400_BAD_REQUEST)
         elif password !=re_password:
-            return JsonResponse({'error': '비번 다름'}, status=200)
+            return Response({'error': '비번 다름'}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            createuser = User.objects.create_user(username=username, password=password, email=email, first_name=first_name, last_name=last_name)
-            p = StudentProject(user = createuser)
-            p.save()
-            for a in Museum.objects.all():
-                w = Watch(project=p, museum=a)
-                w.save()
-            return JsonResponse({'message': '회원가입 완료'}, status=200)
-
-@csrf_exempt
-def UserData(request):
-
-    if request.method == 'GET':
-        data = JSONParser().parse(request)
-        username = data['username']
-        password = data['password']
-
-        loginStatus = authenticate(username=username, password=password)
-        if loginStatus :
-            # 로그인 성공
-            user = User.objects.get(username=username)
-            userSeri = userSerializer(user)    # user 정보
-
-            return JsonResponse(userSeri.data, safe=False)
-
-        else :
-            # 로그인 실패
-            return JsonResponse({'result': 'fail'}, status=200)
-
-
-@csrf_exempt
-def UserMuseum(request):
-
-    if request.method == 'GET':
-        data = JSONParser().parse(request)
-        username = data['username']
-        password = data['password']
-        museum_number = data['museum_number']
-
-        loginStatus = authenticate(username=username, password=password)
-        if loginStatus:
-            # 로그인 성공
-            user = User.objects.get(username=username)
-            userSeri = userSerializer(user)    # user 정보
-
-            project = user.studentproject
-            projectSeri = StudentProjectSerializer(project)
-            watch_set = project.watch_set
             try:
-                museumObj = Museum.objects.get(museum_number=museum_number)
-                watch = watch_set.get(museum=museumObj)
-            except ObjectDoesNotExist:
-                return JsonResponse({'result': 'museum_number error'}, safe=False)
+                user = User.objects.get(username=username)
+            except:
+                user = None
+            if user is None:
+                try:
+                    user = User.objects.create_user(username=username, password=password, email=email,
+                                                    first_name=first_name, last_name=last_name)
+                    Watch_Student = Student(user=user)
+                    Watch_Student.save()
+                    for a in institution.objects.all():
+                        w = Watch(Watch_Student=Watch_Student, Watch_institution=a)
+                        w.save()
+                except:
+                    user.delete()
+                    return Response({'message': '실패'}, status=status.HTTP_202_ACCEPTED)
+            else:
+                return Response("동일아이디 존재", status=status.HTTP_202_ACCEPTED)
 
-            watchListseri = WatchSerializer(watch)
 
-            return JsonResponse(watchListseri.data, safe=False)
+            return Response({'message': '회원가입 완료'}, status=status.HTTP_201_CREATED)
+
+
+# @csrf_exempt
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
+@authentication_classes((JSONWebTokenAuthentication,))
+def UserData(request):
+    user = None
+    username = request.user.username
+    user = User.objects.get(username=username)
+    if request.method == 'GET':
+
+        # data = JSONParser().parse(request)
+        # username = data['username']
+        # password = data['password']
+        # loginStatus = authenticate(username=username, password=password)
+
+        if user is not None:
+            # 로그인 성공
+            #userSeri = userSerializer(user)    # user 정보
+            userSeri = userCustomSerializer(user)  # user 정보
+            return Response(userSeri.data, status=status.HTTP_200_OK)
 
         else :
             # 로그인 실패
-            return JsonResponse({'result': 'fail'}, status=200)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+    # 구현 필요 회원 정보 수정 및 비밀번호 변경
+    # if request.method == 'PUT':
+    #     data = JSONParser().parse(request)
+    #
+    #     user = User.objects.get(username='john')
+    #     user.first_name = 'johnny'
+    #     user.set_password('new password')  # 비밀번호 변경 함수
+    #     user.save()
+
+
+
+# @csrf_exempt
+@api_view(['GET','PUT'])
+@permission_classes((IsAuthenticated, ))
+@authentication_classes((JSONWebTokenAuthentication,))
+def UserMuseumData(request, pk):
+    user = None
+    username = request.user.username
+    user = User.objects.get(username=username)
+    if request.method == 'GET':
+        # data = JSONParser().parse(request)
+        # username = data['username']
+        # password = data['password']
+        # museum_number = data['museum_number']
+
+        # loginStatus = authenticate(username=username, password=password)
+        project = user.student
+        watch_set = project.watch_set
+
+        try:
+            institution_obj = institution.objects.get(institution_number=pk)
+            watch = watch_set.get(Watch_institution=institution_obj)
+        except Exception:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        watchListseri = WatchSerializer(watch)
+
+        return Response(watchListseri.data,status=status.HTTP_200_OK)
+
 
     if request.method == 'PUT':
         data = JSONParser().parse(request)
-        username = data['username']
-        password = data['password']
-        museum_number = data['museum_number']
-        quizNumber = data['quiznumber']
-        quizAnswer = data['quizanswer']
+        # username = data['username']
+        # password = data['password']
+        # museum_number = data['museum_number']
+        try:
 
-        loginStatus = authenticate(username=username, password=password)
+            quizNumber = data['quizNumber']
+            quizAnswer = data['quizAnswer']
+        except :
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-        if loginStatus:
+        # loginStatus = authenticate(username=username, password=password)
+
+        # if loginStatus:
             # 로그인 성공
-            user = User.objects.get(username=username)
+            # user = User.objects.get(username=username)
 
-            project = user.studentproject
-            watch_set = project.watch_set
-            try:
-                museumObj = Museum.objects.get(museum_number=museum_number)
-                watch = watch_set.get(museum=museumObj)
-            except ObjectDoesNotExist:
-                return JsonResponse({'result': 'museum_number error'}, safe=False)
-            if(quizNumber == '1'):
-                watch.quiz1_answer = quizAnswer
-                watch.save()
-            elif(quizNumber == '2'):
-                watch.quiz2_answer = quizAnswer
-                watch.save()
-            elif (quizNumber == '3'):
-                watch.quiz3_answer = quizAnswer
-                watch.save()
+        project = user.student
+        watch_set = project.watch_set
+        try:
+            institution_obj = institution.objects.get(institution_number=pk)
+            watch = watch_set.get(Watch_institution=institution_obj)
+        except Exception:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
-            watchListseri = WatchSerializer(watch)
-            return JsonResponse(watchListseri.data, safe=False)
+        if (quizNumber == '1'):
+            watch.quiz1_answer = quizAnswer
+            watch.save()
+        elif (quizNumber == '2'):
+            watch.quiz2_answer = quizAnswer
+            watch.save()
+        elif (quizNumber == '3'):
+            watch.quiz3_answer = quizAnswer
+            watch.save()
+        else:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-        else :
-            # 로그인 실패
-            return JsonResponse({'result': 'fail'}, status=200)
+        watchListseri = WatchSerializer(watch)
+        updateUser(project)
+        return Response(watchListseri.data, status=status.HTTP_200_OK)
+        # else :
+        #     # 로그인 실패
 
 
-@csrf_exempt
-def CheckSTEMP(request):
+
+# @csrf_exempt
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ))
+@authentication_classes((JSONWebTokenAuthentication,))
+def CheckSTEMP(request, pk):
+    user = None
+    username = request.user.username
+    user = User.objects.get(username=username)
     if request.method == 'POST':
         data = JSONParser().parse(request)
-        username = data['username']
-        password = data['password']
-
-        museumID = data['QRData']
+        # username = data['username']
+        # password = data['password']
+        # museumID = data['QRData']
         GPSstate = data['GPSstate']
 
-        loginStatus = authenticate(username=username, password=password)
-        if loginStatus :
-            user = User.objects.get(username=username)
+        # loginStatus = authenticate(username=username, password=password)
+        # if loginStatus :
+            #user = User.objects.get(username=username)
 
-            project = user.studentproject
-            watch_set = project.watch_set
+        project = user.student
+        watch_set = project.watch_set
+        try:
+            institution_obj = institution.objects.get(institution_number=pk)
+            watch = watch_set.get(Watch_institution=institution_obj)
+        except Exception:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
-            try:
-                museumObj = Museum.objects.get(museum_number=museumID)
-                watch = watch_set.get(museum=museumObj)
-            except ObjectDoesNotExist:
-                return JsonResponse({'result': 'museum_number error'}, safe=False)
+        #===========test===================
+        # GPS가 맞는지 확인
+        StempTest = True  # test 무조건 맞다.
+        #=============test=================
 
-            #GPS가 맞는지 확인
-            StempTest = True #test 무조건 맞다.
-
-            if StempTest:
-                watch.stampStatus = True
-                watch.save()
-                watchListseri = WatchSerializer(watch)
-                return JsonResponse(watchListseri.data, safe=False)
-
-            else:
-                return JsonResponse({'result': 'GPS 지역 위반'}, status=200)
+        if StempTest:   # 조건에 맞다고하면
+            watch.stampStatus = True
+            watch.save()
+            watchListseri = WatchSerializer(watch)
+            updateUser(project)
+            return Response(watchListseri.data, status=status.HTTP_200_OK)
         else:
-            # 로그인 실패
-            return JsonResponse({'result': '로그인 실패'}, status=200)
+            return Response({'result': 'GPS 지역 위반'}, status=status.HTTP_202_ACCEPTED)
+        # else:
+        #     # 로그인 실패
+        #     return JsonResponse({'result': '로그인 실패'}, status=200)
 
 
 
-# # def modityUser(request):
-# #     #구현 필요
-# #     if request.method == 'POST':
-# #         data = JSONParser().parse(request)
-# #
-# #         user = User.objects.get(username='john')
-# #         user.first_name = 'johnny'
-# #         user.set_password('new password')  # 비밀번호 변경 함수
-# #         user.save()
+def updateUser(student):
+    watchset = student.watch_set
+    standardStrLen = 10
+    for w in watchset.all():
+
+        if len(w.quiz1_answer) < standardStrLen or len(w.quiz2_answer) < standardStrLen or len(
+                w.quiz3_answer) < standardStrLen or not w.stampStatus:
+            student.CompleteState = False
+            return False
+    student.CompleteState = True
+    student.save()
+    return True
+
