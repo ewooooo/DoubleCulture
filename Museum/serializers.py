@@ -1,21 +1,21 @@
   
 
 from rest_framework import serializers
-from .models import Museum,StudentProject,Watch
+from .models import institution,Student,Watch
 from django.contrib.auth.models import User
 #모델을 json으로 러턴 하기 위해 변경을 위해 필요한 파일 
 
 
-class StudentProjectSerializer(serializers.ModelSerializer):
+class StudentSerializer(serializers.ModelSerializer):
     class Meta:
-        model = StudentProject
+        model = Student
         fields = ['CompleteState','created','modify_date']
 
 
-class MuseumSerializer(serializers.ModelSerializer): 
+class institutionSerializer(serializers.ModelSerializer): 
     class Meta: 
-        model = Museum 
-        fields = ['museum_number', 'howtogo', 'quiz1','quiz2', 'quiz3']
+        model = institution 
+        fields = ['institution_number', 'howtogo', 'quiz1','quiz2', 'quiz3']
 
 
 class WatchSerializer(serializers.ModelSerializer):
