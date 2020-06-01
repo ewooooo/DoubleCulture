@@ -51,8 +51,8 @@ class Watch(models.Model):
     class Meta:
        ordering = ['modify_date']
 
-class Comunity(models.Model):
-    author =models.ForeignKey(Student, on_delete=models.CASCADE,null=True) 
+class Community(models.Model):
+    author =models.CharField(max_length=10) 
     title = models.CharField(max_length=200)
     text = models.TextField()
     created = models.DateTimeField(auto_now_add=True)
