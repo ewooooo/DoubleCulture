@@ -35,4 +35,5 @@ class TotalAdmin(ImportExportMixin, admin.ModelAdmin):
 admin.site.register(Student,StudentAdmin)
 admin.site.register(institution,institutionAdmin)
 admin.site.register(Watch,watchAdmin)
+admin.site.register(Community,CommunityAdmin)
 admin.site.register(Total,TotalAdmin)

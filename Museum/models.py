@@ -62,6 +62,14 @@ class Comunity(models.Model):
         ordering = ['id']
 
 
+class rand_key(models.Model):  # crontab 검색해서 주기마다 실행되는코드 짜기
+    key = models.CharField(max_length=10)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created']
+
+
 class Total(DBView):
     # view_definition 쿼리문 작성하면된다.
     view_definition = """

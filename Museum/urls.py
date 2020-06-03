@@ -10,4 +10,8 @@ urlpatterns = [
     path('login/', UserData),   #
     path('usermuseum/<str:pk>/', UserMuseumData),
     path('stemp/<str:pk>/', CheckSTEMP),
+
+    path('comu/', views.Community_object),# 글생성
+    path('comupage/<int:page>/', views.Community_page), #page당 5개씩 글 데이터 전송
+    path('comuud/<int:id>/', views.Community_ud), #글 수정 및 삭제
 ]
