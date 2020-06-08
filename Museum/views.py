@@ -324,7 +324,7 @@ def Community_ud(request, id):  # 수정 혹은 삭제할 때는 id url로
 
 
 @csrf_exempt
-def random_key(request):  # 테스트 안해봄, 추가적으로 더구현해야함
+def random_key(request):  # 테스트 안해봄, 추가적으로 더구현해야함, 일단보류하기로함
     if request.method == 'GET':
         while (True):
             rand = randint(1000, 10000)
@@ -335,5 +335,29 @@ def random_key(request):  # 테스트 안해봄, 추가적으로 더구현해야
         data = rand_key.objects.get(key=rand)
         serializer = rand_keySerializer(data=data)
         return JsonResponse(serializer.data, safe=False)
+
+
+@csrf_exempt
+def stamp(request):  # id,institution_number,latitude, longitude 4가지 받아야함
+    if request.method == 'PUT':
+        data_request = JSONParser().parse(request)
+        request_institution = data_request['institution_number']  # 보낸 기관번호
+        request_gps = (float(data_request['latitude']), float(data_request['longitude']))  # 보낸 좌표
+        try:
+            query_set = institution.objects.get(institution_number=request_institution)
+            aim_gps = (float(query_set.latitude), float(query_set.longitude))  # 기관좌표
+        except Exception:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        if haversine(request_gps, aim_gps) < 0.5:  # 거리가 0.5km이하면
+            try:
+                obj = Watch.objects.get(Watch_Student__user__username=data_request['id'],
+                                        Watch_institution__institution_number=request_institution)
+                obj.stampStatus = True
+                obj.save()
+            except Exception:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+        return HttpResponse(status=204)
+
 
 
