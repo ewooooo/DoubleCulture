@@ -254,7 +254,7 @@ def CheckSTEMP(request):
 
 
 @api_view(['PUT'])
-@permission_classes((IsAuthenticated, ))
+@permission_classes((IsAuthenticated,))
 @authentication_classes((JSONWebTokenAuthentication,))
 def feeling(request):
     user = None
@@ -264,19 +264,27 @@ def feeling(request):
         data_request = JSONParser().parse(request)
         feel = data_request['feel']
         if len(feel)<30:
-            return Response(status=status.HTTP_401_NOT_FOUND)
+            return Response(status=202)
         student =user.student
+
         try:
             student.feeling=feel
             student.save()
-            return Response(status=status.HTTP_200_OK)
+            updateUser(student)
+            return Response({'feel': student.feeling}, status=status.HTTP_200_OK)
         except Exception:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            return Response(status=404)
 
- 
+
+    elif request.method == 'GET':
+        student = user.student
+        return Response({'feel': student.feeling}, status=status.HTTP_200_OK)
+
 
 def updateUser(student):
     watchset = student.watch_set
+    if len( student.feeling) < 30:
+        return False
     standardStrLen = 10
     for w in watchset.all():
 
@@ -286,7 +294,6 @@ def updateUser(student):
     student.CompleteState = True
     student.save()
     return True
-
 
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, ))
