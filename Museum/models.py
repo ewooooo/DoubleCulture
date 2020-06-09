@@ -14,7 +14,7 @@ class institution(models.Model):
     qrcode=models.CharField(max_length=50, default=False)
     latitude = models.CharField(max_length=20)
     longitude = models.CharField(max_length=20)
-    gps_error= models.CharField(max_length=5, default=50)
+    gps_error= models.CharField(max_length=5, default=0.5)
     class Meta:
         ordering = ['institution_number']
 

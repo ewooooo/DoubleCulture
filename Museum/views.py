@@ -75,6 +75,9 @@ def singUp(request):
     if request.method == 'POST':
         data = JSONParser().parse(request)
 
+        if not data['appkey'] == '940109':
+           return Response({'error': '앱키오류'}, status=status.HTTP_400_BAD_REQUEST)
+
         aim_key= data['joinkey']
         try:
             joinkey.objects.get(key=aim_key)
