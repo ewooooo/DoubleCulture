@@ -225,11 +225,11 @@ def CheckSTEMP(request, pk):
     if request.method == 'PUT':
         data_request = JSONParser().parse(request)
         request_gps = (float(data_request['latitude']), float(data_request['longitude']))  # 보낸 좌표
-
+        aim_qrcode=data_request['QR']
         student =user.student
         watch_set = student.watch_set
         try:
-            institution_obj = institution.objects.get(institution_number=pk)
+            institution_obj = institution.objects.get(qrcode=aim_qrcode)
             watch = watch_set.get(Watch_institution=institution_obj)
             aim_gps = (float(institution_obj.latitude), float(institution_obj.longitude))  # 기관좌표
         except Exception:

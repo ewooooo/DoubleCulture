@@ -11,6 +11,7 @@ class institution(models.Model):
     quiz = models.CharField(max_length=50)
     latitude = models.CharField(max_length=20)
     longitude = models.CharField(max_length=20)
+    qrcode = models.CharField(max_length=50,default=False)
 
     class Meta:
         ordering = ['institution_number']
