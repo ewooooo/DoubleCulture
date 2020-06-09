@@ -55,10 +55,10 @@ def MuseumData(request, pk):
     #     return JsonResponse(serializer.errors, status=400)
 
 
-@api_view(['GET','POST'])
+@api_view(['PUT','POST'])
 @permission_classes((AllowAny, ))  #제한 없이 접근 가능
 def singUp(request):
-    if request.method == 'GET':
+    if request.method == 'PUT':
         data = JSONParser().parse(request)
         username = data['username']
         try:
