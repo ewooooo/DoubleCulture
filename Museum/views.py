@@ -253,8 +253,8 @@ def CheckSTEMP(request):
             return Response({'result': 'GPS 지역 위반'}, status=status.HTTP_202_ACCEPTED)
 
 
-@api_view(['PUT'])
-@permission_classes((IsAuthenticated,))
+@api_view(['PUT','GET'])
+@permission_classes((IsAuthenticated, ))
 @authentication_classes((JSONWebTokenAuthentication,))
 def feeling(request):
     user = None
@@ -277,8 +277,11 @@ def feeling(request):
 
 
     elif request.method == 'GET':
-        student = user.student
-        return Response({'feel': student.feeling}, status=status.HTTP_200_OK)
+        try:
+            student = user.student
+            return Response({'feel': student.feeling}, status=status.HTTP_200_OK)
+        except Exception:
+            return Response(status=404)
 
 
 def updateUser(student):
