@@ -82,7 +82,7 @@ def singUp(request):
         try:
             joinkey.objects.get(key=aim_key)
         except:
-            return Response({'error': '인증키오류'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
         username = data['username']
         password = data['password']
         re_password = data['re_password']
