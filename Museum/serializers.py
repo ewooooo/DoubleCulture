@@ -13,13 +13,13 @@ from django.contrib.auth.models import User
 class institutionSerializer(serializers.ModelSerializer):
     class Meta:
         model = institution
-        fields = ['institution_number', 'howtogo', 'quiz1','quiz2', 'quiz3','longitude','longitude']
+        fields = ['institution_number', 'quiz','longitude','longitude']
 
 
 class WatchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Watch
-        fields = ['stampStatus', 'quiz1_answer','quiz2_answer', 'quiz3_answer']
+        fields = ['stampStatus', 'quiz_answer']
 
 
 # class userSerializer(serializers.ModelSerializer):

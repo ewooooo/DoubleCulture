@@ -14,7 +14,7 @@ from .models import *
 from .serializers import *
 from django.contrib.auth.models import User     # 회원가입 필요
 
-import haversine
+from haversine import haversine
 
 # from django.contrib.auth import authenticate    # 아이디 비번 확인을 위해 사용
 #from django.core.exceptions import ObjectDoesNotExist   # object 접근 에러처리
@@ -181,7 +181,6 @@ def UserMuseumData(request, pk):
         # museum_number = data['museum_number']
         try:
 
-            quizNumber = data['quizNumber']
             quizAnswer = data['quizAnswer']
         except :
             return Response(status=status.HTTP_401_UNAUTHORIZED)
@@ -200,16 +199,11 @@ def UserMuseumData(request, pk):
         except Exception:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        if (quizNumber == '1'):
-            watch.quiz1_answer = quizAnswer
+        try:
+            watch.quiz_answer = quizAnswer
             watch.save()
-        elif (quizNumber == '2'):
-            watch.quiz2_answer = quizAnswer
-            watch.save()
-        elif (quizNumber == '3'):
-            watch.quiz3_answer = quizAnswer
-            watch.save()
-        else:
+
+        except Exception:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
         watchListseri = WatchSerializer(watch)
@@ -232,7 +226,7 @@ def CheckSTEMP(request, pk):
         data_request = JSONParser().parse(request)
         request_gps = (float(data_request['latitude']), float(data_request['longitude']))  # 보낸 좌표
 
-        student = user.student
+        student =user.student
         watch_set = student.watch_set
         try:
             institution_obj = institution.objects.get(institution_number=pk)
@@ -250,13 +244,35 @@ def CheckSTEMP(request, pk):
         else:
             return Response({'result': 'GPS 지역 위반'}, status=status.HTTP_202_ACCEPTED)
 
+
+@api_view(['PUT'])
+@permission_classes((IsAuthenticated, ))
+@authentication_classes((JSONWebTokenAuthentication,))
+def feeling(request):
+    user = None
+    username = request.user.username
+    user = User.objects.get(username=username)
+    if request.method == 'PUT':
+        data_request = JSONParser().parse(request)
+        feel = data_request['feel']
+        if len(feel)<30:
+            return Response(status=status.HTTP_401_NOT_FOUND)
+        student =user.student
+        try:
+            student.feeling=feel
+            student.save()
+            return Response(status=status.HTTP_200_OK)
+        except Exception:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+ 
+
 def updateUser(student):
     watchset = student.watch_set
     standardStrLen = 10
     for w in watchset.all():
 
-        if len(w.quiz1_answer) < standardStrLen or len(w.quiz2_answer) < standardStrLen or len(
-                w.quiz3_answer) < standardStrLen or not w.stampStatus:
+        if len(w.quiz_answer) < standardStrLen or not w.stampStatus:
             student.CompleteState = False
             return False
     student.CompleteState = True

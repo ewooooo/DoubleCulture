@@ -8,10 +8,7 @@ from django_db_views.db_view import DBView  # pip install django-db-views , inst
 
 class institution(models.Model):
     institution_number = models.CharField(max_length=13, primary_key=True)
-    howtogo = models.CharField(max_length=20)
-    quiz1 = models.CharField(max_length=50)
-    quiz2 = models.CharField(max_length=50)
-    quiz3 = models.CharField(max_length=50)
+    quiz = models.CharField(max_length=50)
     latitude = models.CharField(max_length=20)
     longitude = models.CharField(max_length=20)
 
@@ -21,9 +18,8 @@ class institution(models.Model):
 
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-
     CompleteState = models.BooleanField(default=False)  # 이수 여부
-
+    feeling= models.TextField(default='30Bytes 이상 입력하세요')
     created = models.DateTimeField(auto_now_add=True)
     modify_date = models.DateField(auto_now=True)  # 수정일
 
@@ -39,9 +35,8 @@ class Watch(models.Model):
     create_Stamp_date = models.DateField(null=True)
     create_Stamp_time = models.TimeField(null=True)  # 스팸프 장소
 
-    quiz1_answer = models.CharField(max_length=50, default=" ")  # 퀴즈에 대한 답변
-    quiz2_answer = models.CharField(max_length=50, default=" ")
-    quiz3_answer = models.CharField(max_length=50, default=" ")
+    quiz_answer = models.CharField(max_length=50, default=" ")  # 퀴즈에 대한 답변
+
 
     modify_date = models.DateField(auto_now=True)  # 수정일
 
