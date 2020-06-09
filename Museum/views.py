@@ -221,19 +221,19 @@ def UserMuseumData(request, pk):
 
 
 # @csrf_exempt
-@api_view(['POST'])
+@api_view(['PUT'])
 @permission_classes((IsAuthenticated, ))
 @authentication_classes((JSONWebTokenAuthentication,))
 def CheckSTEMP(request, pk):
     user = None
     username = request.user.username
     user = User.objects.get(username=username)
-    if request.method == 'POST':
+    if request.method == 'PUT':
         data_request = JSONParser().parse(request)
         request_gps = (float(data_request['latitude']), float(data_request['longitude']))  # 보낸 좌표
 
-        project = user.student
-        watch_set = project.watch_set
+        student = user.student
+        watch_set = student.watch_set
         try:
             institution_obj = institution.objects.get(institution_number=pk)
             watch = watch_set.get(Watch_institution=institution_obj)
@@ -245,7 +245,7 @@ def CheckSTEMP(request, pk):
             watch.stampStatus = True
             watch.save()
             watchListseri = WatchSerializer(watch)
-            updateUser(project)
+            updateUser(student)
             return Response(watchListseri.data, status=status.HTTP_200_OK)
         else:
             return Response({'result': 'GPS 지역 위반'}, status=status.HTTP_202_ACCEPTED)
