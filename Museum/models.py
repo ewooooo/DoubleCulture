@@ -23,9 +23,6 @@ class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     CompleteState = models.BooleanField(default=False)  # 이수 여부
-    # Museum1_State = models.BooleanField(default=False)  # 이수 여부
-    # Museum2_State = models.BooleanField(default=False)  # 이수 여부
-    # Museum3_State = models.BooleanField(default=False)  # 이수 여부
 
     created = models.DateTimeField(auto_now_add=True)
     modify_date = models.DateField(auto_now=True)  # 수정일

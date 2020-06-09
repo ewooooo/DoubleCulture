@@ -106,7 +106,6 @@ def singUp(request):
             else:
                 return Response("동일아이디 존재", status=status.HTTP_202_ACCEPTED)
 
-
             return Response({'message': '회원가입 완료'}, status=status.HTTP_201_CREATED)
 
 
@@ -281,6 +280,9 @@ def Community_page(request, page):  # 5개씩페이지 page값 url로 받아오�
 @permission_classes((IsAuthenticated, ))
 @authentication_classes((JSONWebTokenAuthentication,))
 def Community_object(request):
+    user = None
+    username = request.user.username
+    user = User.objects.get(username=username)
     if request.method == 'POST':
         data = JSONParser().parse(request)
         serializer = CommunitySerializer(data=data)
