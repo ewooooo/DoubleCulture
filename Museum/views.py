@@ -70,7 +70,7 @@ def singUp(request):
         if user is None:
             return Response("true",status=status.HTTP_200_OK)
         else:
-            return Response("fail",status=status.HTTP_200_OK)
+            return Response("fail",status=status.HTTP_202_ACCEPTED)
 
     if request.method == 'POST':
         data = JSONParser().parse(request)
