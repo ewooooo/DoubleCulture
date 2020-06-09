@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Student,institution,Watch,Community,Total
+from .models import Student,institution,Watch,Community,Total,joinkey
 
 from import_export import resources, fields
 from import_export.admin import ImportExportActionModelAdmin
@@ -32,6 +32,12 @@ class TotalAdmin(ImportExportMixin, admin.ModelAdmin):
 
     pass
 
+class joinkeyAdmin(ImportExportMixin, admin.ModelAdmin):
+
+    pass
+
+
+
 
 
 
@@ -41,3 +47,4 @@ admin.site.register(institution,institutionAdmin)
 admin.site.register(Watch,watchAdmin)
 admin.site.register(Community,CommunityAdmin)
 admin.site.register(Total,TotalAdmin)
+admin.site.register(joinkey,joinkeyAdmin)

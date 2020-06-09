@@ -75,6 +75,11 @@ def singUp(request):
     if request.method == 'POST':
         data = JSONParser().parse(request)
 
+        aim_key= data['joinkey']
+        try:
+            joinkey.objects.get(key=aim_key)
+        except:
+            return Response({'error': '인증키오류'}, status=status.HTTP_400_BAD_REQUEST)
         username = data['username']
         password = data['password']
         re_password = data['re_password']
@@ -235,7 +240,7 @@ def CheckSTEMP(request):
         except Exception:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        if haversine(request_gps, aim_gps) < 0.5:  # 거리가 0.5km이하면
+        if haversine(request_gps, aim_gps) <  institution_obj.gps_error:  # 거리가 0.5km이하면
             watch.stampStatus = True
             watch.save()
             watchListseri = WatchSerializer(watch)

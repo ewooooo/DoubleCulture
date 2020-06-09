@@ -14,7 +14,7 @@ class institution(models.Model):
     qrcode=models.CharField(max_length=50, default=False)
     latitude = models.CharField(max_length=20)
     longitude = models.CharField(max_length=20)
-    id = models.CharField(max_length=20,blank=True)
+    gps_error= models.CharField(max_length=5, default=50)
     class Meta:
         ordering = ['institution_number']
 
@@ -58,7 +58,7 @@ class Community(models.Model):
         ordering = ['id']
 
 
-class rand_key(models.Model):  # crontab 검색해서 주기마다 실행되는코드 짜기
+class joinkey(models.Model):  # crontab 검색해서 주기마다 실행되는코드 짜기
     key = models.CharField(max_length=10)
     created = models.DateTimeField(auto_now_add=True)
 
