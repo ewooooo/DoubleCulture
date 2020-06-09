@@ -12,18 +12,13 @@ from rest_framework.parsers import JSONParser
 
 from .models import *
 from .serializers import *
-
 from django.contrib.auth.models import User     # 회원가입 필요
-# from django.contrib.auth import authenticate    # 아이디 비번 확인을 위해 사용
 
+import haversine
+
+# from django.contrib.auth import authenticate    # 아이디 비번 확인을 위해 사용
 #from django.core.exceptions import ObjectDoesNotExist   # object 접근 에러처리
 
-
-# Create your views here.
-
-# @api_view(['GET','POST'])
-# @permission_classes((IsAuthenticated, ))
-# @authentication_classes((JSONWebTokenAuthentication,))
 
 
 @api_view(['GET'])
@@ -235,30 +230,19 @@ def CheckSTEMP(request, pk):
     username = request.user.username
     user = User.objects.get(username=username)
     if request.method == 'POST':
-        data = JSONParser().parse(request)
-        # username = data['username']
-        # password = data['password']
-        # museumID = data['QRData']
-        GPSstate = data['GPSstate']
-
-        # loginStatus = authenticate(username=username, password=password)
-        # if loginStatus :
-            #user = User.objects.get(username=username)
+        data_request = JSONParser().parse(request)
+        request_gps = (float(data_request['latitude']), float(data_request['longitude']))  # 보낸 좌표
 
         project = user.student
         watch_set = project.watch_set
         try:
             institution_obj = institution.objects.get(institution_number=pk)
             watch = watch_set.get(Watch_institution=institution_obj)
+            aim_gps = (float(institution_obj.latitude), float(institution_obj.longitude))  # 기관좌표
         except Exception:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        #===========test===================
-        # GPS가 맞는지 확인
-        StempTest = True  # test 무조건 맞다.
-        #=============test=================
-
-        if StempTest:   # 조건에 맞다고하면
+        if haversine(request_gps, aim_gps) < 0.5:  # 거리가 0.5km이하면
             watch.stampStatus = True
             watch.save()
             watchListseri = WatchSerializer(watch)
@@ -266,11 +250,6 @@ def CheckSTEMP(request, pk):
             return Response(watchListseri.data, status=status.HTTP_200_OK)
         else:
             return Response({'result': 'GPS 지역 위반'}, status=status.HTTP_202_ACCEPTED)
-        # else:
-        #     # 로그인 실패
-        #     return JsonResponse({'result': '로그인 실패'}, status=200)
-
-
 
 def updateUser(student):
     watchset = student.watch_set
@@ -286,28 +265,34 @@ def updateUser(student):
     return True
 
 
-@csrf_exempt
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
+@authentication_classes((JSONWebTokenAuthentication,))
 def Community_page(request, page):  # 5개씩페이지 page값 url로 받아오기
     if request.method == 'GET':
         query_set = Community.objects.all()[(page - 1) * 5:]  # page번째 글 찾음
         if query_set.count() >= 5:  # 5개이상 글있으면 5개 글반환
             query_set = query_set[:5]
         serializer = CommunitySerializer(query_set, many=True)
-        return JsonResponse(serializer.data, safe=False)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-@csrf_exempt
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ))
+@authentication_classes((JSONWebTokenAuthentication,))
 def Community_object(request):
     if request.method == 'POST':
         data = JSONParser().parse(request)
         serializer = CommunitySerializer(data=data)
         if serializer.is_valid():
             serializer.save()
-            return JsonResponse(serializer.data, status=201)
-        return JsonResponse(serializer.errors, status=400)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)
 
 
-@csrf_exempt
+@api_view(['PUT','DELETE'])
+@permission_classes((IsAuthenticated, ))
+@authentication_classes((JSONWebTokenAuthentication,))
 def Community_ud(request, id):  # 수정 혹은 삭제할 때는 id url로
     obj = Community.objects.get(pk=id)  # 수정 혹은 삭제 될 데이터
     if request.method == 'PUT':  # PUT이면 수정
@@ -315,49 +300,30 @@ def Community_ud(request, id):  # 수정 혹은 삭제할 때는 id url로
         serializer = CommunitySerializer(obj, data=data)  # 수정 obj도 넣어줌
         if serializer.is_valid():
             serializer.save()
-            return JsonResponse(serializer.data, status=201)
-        return JsonResponse(serializer.errors, status=400)
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
 
     elif request.method == 'DELETE':  # DELETE면 삭제
         obj.delete()
-        return HttpResponse(status=204)
+        return Response(status=204)
 
 
-@csrf_exempt
-def random_key(request):  # 테스트 안해봄, 추가적으로 더구현해야함, 일단보류하기로함
-    if request.method == 'GET':
-        while (True):
-            rand = randint(1000, 10000)
-            query_set = rand_key.objects.filter(key=rand)
-            if len(query_set) > 0:
-                rand_key.objects.create(key=rand)
-                break
-        data = rand_key.objects.get(key=rand)
-        serializer = rand_keySerializer(data=data)
-        return JsonResponse(serializer.data, safe=False)
+# @api_view(['GET'])
+# @permission_classes((IsAuthenticated, ))
+# @authentication_classes((JSONWebTokenAuthentication,))
+# def random_key(request):  # 테스트 안해봄, 추가적으로 더구현해야함, 일단보류하기로함
+#     if request.method == 'GET':
+#         while (True):
+#             rand = randint(1000, 10000)
+#             query_set = rand_key.objects.filter(key=rand)
+#             if len(query_set) > 0:
+#                 rand_key.objects.create(key=rand)
+#                 break
+#         data = rand_key.objects.get(key=rand)
+#         serializer = rand_keySerializer(data=data)
+#         return JsonResponse(serializer.data, safe=False)
 
 
-@csrf_exempt
-def stamp(request):  # id,institution_number,latitude, longitude 4가지 받아야함
-    if request.method == 'PUT':
-        data_request = JSONParser().parse(request)
-        request_institution = data_request['institution_number']  # 보낸 기관번호
-        request_gps = (float(data_request['latitude']), float(data_request['longitude']))  # 보낸 좌표
-        try:
-            query_set = institution.objects.get(institution_number=request_institution)
-            aim_gps = (float(query_set.latitude), float(query_set.longitude))  # 기관좌표
-        except Exception:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
-        if haversine(request_gps, aim_gps) < 0.5:  # 거리가 0.5km이하면
-            try:
-                obj = Watch.objects.get(Watch_Student__user__username=data_request['id'],
-                                        Watch_institution__institution_number=request_institution)
-                obj.stampStatus = True
-                obj.save()
-            except Exception:
-                return Response(status=status.HTTP_404_NOT_FOUND)
-        return HttpResponse(status=204)
 
 
 
