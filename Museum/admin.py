@@ -1,6 +1,10 @@
 from django.contrib import admin
 from .models import Student,institution,Watch,Community,Total
-from import_export.admin import ExportActionModelAdmin, ImportExportMixin, ImportMixin
+
+from import_export import resources, fields
+from import_export.admin import ImportExportActionModelAdmin
+from import_export.widgets import ForeignKeyWidget
+from import_export.admin import ImportExportMixin, ImportMixin
 from rangefilter.filter import DateRangeFilter, DateTimeRangeFilter   # pip install django-admin-rangefilter, installed app ='rangefilter',
 
 class StudentAdmin(ImportExportMixin, admin.ModelAdmin):
@@ -9,8 +13,8 @@ class StudentAdmin(ImportExportMixin, admin.ModelAdmin):
     list_filter = ('CompleteState',)
     pass
 
-class institutionAdmin(ImportExportMixin, admin.ModelAdmin):
-    list_display = ['institution_number', 'quiz']
+class institutionAdmin(resources.ModelResource,ImportExportMixin, admin.ModelAdmin):
+    list_display = ['institution_number', 'quiz1','quiz2','quiz3']
 
     pass
 

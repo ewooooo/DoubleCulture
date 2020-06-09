@@ -218,7 +218,7 @@ def UserMuseumData(request, pk):
 @api_view(['PUT'])
 @permission_classes((IsAuthenticated, ))
 @authentication_classes((JSONWebTokenAuthentication,))
-def CheckSTEMP(request, pk):
+def CheckSTEMP(request):
     user = None
     username = request.user.username
     user = User.objects.get(username=username)

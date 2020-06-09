@@ -8,13 +8,16 @@ from django_db_views.db_view import DBView  # pip install django-db-views , inst
 
 class institution(models.Model):
     institution_number = models.CharField(max_length=13, primary_key=True)
-    quiz = models.CharField(max_length=50)
+    quiz1 = models.CharField(max_length=400,blank=True, default=False)
+    quiz2= models.CharField(max_length=400,blank=True, default=False)
+    quiz3 = models.CharField(max_length=400, blank=True, default=False)
+    qrcode=models.CharField(max_length=50, default=False)
     latitude = models.CharField(max_length=20)
     longitude = models.CharField(max_length=20)
-    qrcode = models.CharField(max_length=50,default=False)
-
+    id = models.CharField(max_length=20,blank=True)
     class Meta:
         ordering = ['institution_number']
+
 
 
 class Student(models.Model):
@@ -28,6 +31,7 @@ class Student(models.Model):
         ordering = ['created']
 
 
+
 class Watch(models.Model):
     Watch_Student = models.ForeignKey(Student, on_delete=models.CASCADE, null=True)  # 만든 유저
     Watch_institution = models.ForeignKey(institution, on_delete=models.CASCADE, null=True)  # 해당 박물관
@@ -36,7 +40,7 @@ class Watch(models.Model):
     create_Stamp_date = models.DateField(null=True)
     create_Stamp_time = models.TimeField(null=True)  # 스팸프 장소
 
-    quiz_answer = models.CharField(max_length=50, default=" ")  # 퀴즈에 대한 답변
+    quiz_answer = models.CharField(max_length=400, default=" ")  # 퀴즈에 대한 답변
 
 
     modify_date = models.DateField(auto_now=True)  # 수정일
