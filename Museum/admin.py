@@ -71,7 +71,10 @@ class institutionAdmin(ImportExportMixin, admin.ModelAdmin):
     pass
 
 class watchAdmin(ImportExportMixin, admin.ModelAdmin):
-    list_display = ['Watch_Student','Watch_institution', 'quiz_answer']
+    def get_username(sef, obj):
+        return obj.Watch_Student.user.username
+
+    list_display = ['get_username', 'Watch_institution', 'quiz_answer', 'stampStatus']
     search_fields = ['Watch_Student__user__username','Watch_institution__institution_number', 'modify_date']
     list_filter =(('modify_date',DateRangeFilter),) # pip install django-admin-rangefilter, installed app ='rangefilter',
     pass
