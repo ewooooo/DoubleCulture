@@ -15,6 +15,7 @@ class institution(models.Model):
     latitude = models.CharField(max_length=20)
     longitude = models.CharField(max_length=20)
     gps_error= models.CharField(max_length=5, default=0.5)
+
     class Meta:
         ordering = ['institution_number']
 
@@ -31,14 +32,13 @@ class Student(models.Model):
         ordering = ['created']
 
 
-
 class Watch(models.Model):
     Watch_Student = models.ForeignKey(Student, on_delete=models.CASCADE, null=True)  # 만든 유저
     Watch_institution = models.ForeignKey(institution, on_delete=models.CASCADE, null=True)  # 해당 박물관
 
     stampStatus = models.BooleanField(default=False)  # 스탬프 상태
-    create_Stamp_date = models.DateField(null=True)
-    create_Stamp_time = models.TimeField(null=True)  # 스팸프 장소
+    create_Stamp_date = models.CharField(max_length=15,null=True,default=False)
+    create_Stamp_time = models.CharField(max_length=15,null=True,default=False)  # 스팸프 장소
 
     quiz_answer = models.CharField(max_length=400, default=" ")  # 퀴즈에 대한 답변
 

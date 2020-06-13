@@ -15,6 +15,7 @@ from .serializers import *
 from django.contrib.auth.models import User     # 회원가입 필요
 
 from haversine import haversine
+import time
 
 # from django.contrib.auth import authenticate    # 아이디 비번 확인을 위해 사용
 #from django.core.exceptions import ObjectDoesNotExist   # object 접근 에러처리
@@ -73,8 +74,9 @@ def singUp(request):
             return Response("fail",status=status.HTTP_202_ACCEPTED)
 
     if request.method == 'POST':
-        data = JSONParser().parse(request)
 
+        
+        data = JSONParser().parse(request)
         if not data['appkey'] == '940109':
            return Response({'error': '앱키오류'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -83,6 +85,7 @@ def singUp(request):
             joinkey.objects.get(key=aim_key)
         except:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
+
         username = data['username']
         password = data['password']
         re_password = data['re_password']
@@ -243,8 +246,11 @@ def CheckSTEMP(request):
         except Exception:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        if haversine(request_gps, aim_gps) <  institution_obj.gps_error:  # 거리가 0.5km이하면
+        if haversine(request_gps, aim_gps) < float(institution_obj.gps_error):  
             watch.stampStatus = True
+            times=time.time()
+            watch.create_Stamp_date=time.strftime('%a-%Y-%m-%d', time.localtime(times))
+            watch.create_Stamp_time=time.strftime('%H:%M', time.localtime(times))
             watch.save()
             watchListseri = WatchSerializer(watch)
             updateUser(student)
@@ -298,6 +304,8 @@ def updateUser(student):
     student.save()
     return True
 
+
+
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, ))
 @authentication_classes((JSONWebTokenAuthentication,))
@@ -343,21 +351,6 @@ def Community_ud(request, id):  # 수정 혹은 삭제할 때는 id url로
         obj.delete()
         return Response(status=204)
 
-
-# @api_view(['GET'])
-# @permission_classes((IsAuthenticated, ))
-# @authentication_classes((JSONWebTokenAuthentication,))
-# def random_key(request):  # 테스트 안해봄, 추가적으로 더구현해야함, 일단보류하기로함
-#     if request.method == 'GET':
-#         while (True):
-#             rand = randint(1000, 10000)
-#             query_set = rand_key.objects.filter(key=rand)
-#             if len(query_set) > 0:
-#                 rand_key.objects.create(key=rand)
-#                 break
-#         data = rand_key.objects.get(key=rand)
-#         serializer = rand_keySerializer(data=data)
-#         return JsonResponse(serializer.data, safe=False)
 
 
 
