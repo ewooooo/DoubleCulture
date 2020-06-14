@@ -66,12 +66,19 @@ class joinkey(models.Model):  # crontab 검색해서 주기마다 실행되는�
         ordering = ['created']
 
 
+
+'''
 class Total(DBView):
+    day = models.CharField(max_length=10)
+    counts = models.CharField(max_length=10)
     # view_definition 쿼리문 작성하면된다.
     view_definition = """
-    select * from Museum_Watch
+    select row_number() over () as id, day, Count(day) as counts 
+    from (select SUBSTR(create_Stamp_date, 0, 4) as day from Museum_Watch 
+    where create_Stamp_date is not null ) group by day order by counts DESC
     """
 
     class Meta:
         managed = False
         db_table = "Total"
+'''

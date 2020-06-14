@@ -91,9 +91,9 @@ def singUp(request):
         re_password = data['re_password']
         email = data['email']
         first_name = data['first_name']
-        last_name = data['last_name']
+ 
 
-        if not(username and password and re_password and email and first_name and last_name) :
+        if not(username and password and re_password and email and first_name) :
             return Response({'error': '빈칸'}, status=status.HTTP_400_BAD_REQUEST)
         elif password !=re_password:
             return Response({'error': '비번 다름'}, status=status.HTTP_400_BAD_REQUEST)
@@ -105,7 +105,7 @@ def singUp(request):
             if user is None:
                 try:
                     user = User.objects.create_user(username=username, password=password, email=email,
-                                                    first_name=first_name, last_name=last_name)
+                                                    first_name=first_name)
                     Watch_Student = Student(user=user)
                     Watch_Student.save()
                     for a in institution.objects.all():
@@ -138,6 +138,8 @@ def UserData(request):
         if user is not None:
             # 로그인 성공
             #userSeri = userSerializer(user)    # user 정보
+            
+            updateUser(user.student)
             userSeri = userCustomSerializer(user)  # user 정보
             return Response(userSeri.data, status=status.HTTP_200_OK)
 
@@ -145,14 +147,20 @@ def UserData(request):
             # 로그인 실패
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-    # 구현 필요 회원 정보 수정 및 비밀번호 변경
-    # if request.method == 'PUT':
-    #     data = JSONParser().parse(request)
-    #
-    #     user = User.objects.get(username='john')
-    #     user.first_name = 'johnny'
-    #     user.set_password('new password')  # 비밀번호 변경 함수
-    #     user.save()
+    if request.method == 'PUT':
+        data = JSONParser().parse(request)
+        now_password=data['password']
+        if check_password(now_password,user.password):
+            p1=data['new_password']
+            p2=data['new_password_re']
+            if p1==p2:
+                user.setpassword(p1)
+                user.save()
+                return Response(status=status.HTTP_200_OK)
+            else:
+                return Response({'error': '새로운 비밀번호 확인 실패'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+                return Response({'error': '현재 비밀번호 확인 실패'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 
