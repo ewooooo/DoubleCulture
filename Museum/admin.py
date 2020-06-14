@@ -1,10 +1,10 @@
 from django.contrib import admin
-from .models import Student,institution,Watch,Community,joinkey,User
+from .models import Student,institution,Watch,Community,joinkey,User,day
 from import_export import resources
-from import_export.admin import ExportActionModelAdmin, ImportExportMixin, ImportMixin,ImportExportActionModelAdmin
+from import_export.admin import ExportActionModelAdmin, ImportExportMixin, ImportMixin, ExportMixin
 from rangefilter.filter import DateRangeFilter, DateTimeRangeFilter   # pip install django-admin-rangefilter, installed app ='rangefilter',
 from import_export.widgets import ForeignKeyWidget
-from import_export import resources, fields
+from import_export import resources, fields,widgets
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
 
@@ -64,6 +64,8 @@ class UserAdmin(ImportExportMixin, admin.ModelAdmin):
     list_display=['username','first_name', 'email']
     change_form = myUserCreationForm2
     add_form = myUserCreationForm
+    search_fields = ['username',]
+    list_filter = ('is_staff',)
     def get_form(self, request, obj=None, **kwargs):
         if not obj:
             self.form = self.add_form
@@ -79,24 +81,35 @@ class UserAdmin(ImportExportMixin, admin.ModelAdmin):
 
 
 class StudentResource(resources.ModelResource):
+     
      user = fields.Field(
         column_name='user', attribute='user',
         widget=ForeignKeyWidget(User, 'username')
     )
+
+
+
+                    
+
      class Meta:
         model = Student
         exclude = ('id',)
         import_id_fields = ('user',)
+        
 
 
 
 
-class StudentAdmin(ImportExportMixin, admin.ModelAdmin):
+class StudentAdmin(ExportMixin, admin.ModelAdmin):
     resource_class=StudentResource
-    list_display = ['user', 'CompleteState','created','modify_date']
+    list_display = ['get_id','name' ,'CompleteState','feeling']
     search_fields = ['created', 'user__username']
     list_filter = ('CompleteState',)
-    pass
+    def name(self,obj):
+        return obj.user.first_name
+    def get_id(self,obj):
+        return obj.user.username
+
 
 class institutionAdmin(ImportExportMixin, admin.ModelAdmin):
     list_display = ['institution_number', 'quiz1','quiz2','quiz3']
@@ -124,7 +137,42 @@ class joinkeyAdmin(ImportExportMixin, admin.ModelAdmin):
 
 
 
-
+class dayAdmin(admin.ModelAdmin):
+    list_display = ['number','Mon','Tue' ,'Wed','Thu','Fri','Sat','Sun']
+   
+    def number(self,obj):
+        D1=0
+        D2=0
+        D3=0
+        D4=0
+        D5=0
+        D6=0
+        D7=0
+        x=Watch.objects.all()
+        for a in x:
+            d=str(a.create_Stamp_date)
+            if d[0:3]=='Mon':
+                D1+=1
+            elif d[0:3]=='Tue':
+                D2+=1
+            elif d[0:3]=='Wed':
+                D3+=1
+            elif d[0:3]=='Thu':
+                D4+=1
+            elif d[0:3]=='Fri':
+                D5+=1
+            elif d[0:3]=='Sat':
+                D6+=1
+            elif d[0:3]=='Sun':
+                D7+=1
+        obj.Mon=D1
+        obj.Tue=D2
+        obj.Wed=D3
+        obj.Thu=D4
+        obj.Fri=D5
+        obj.Sat=D6
+        obj.Sun=D7
+        return '횟수'
 
 
 
@@ -139,4 +187,5 @@ admin.site.register(joinkey,joinkeyAdmin)
 
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
+admin.site.register(day, dayAdmin)
 

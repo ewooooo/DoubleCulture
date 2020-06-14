@@ -66,6 +66,19 @@ class joinkey(models.Model):  # crontab 검색해서 주기마다 실행되는�
         ordering = ['created']
 
 
+class day(models.Model):
+    Mon = models.CharField(max_length=15,blank=True, default=False)
+    Tue = models.CharField(max_length=15,blank=True, default=False)
+    Wed = models.CharField(max_length=15,blank=True, default=False)
+    Thu = models.CharField(max_length=15,blank=True, default=False)
+    Fri = models.CharField(max_length=15,blank=True, default=False)
+    Sat = models.CharField(max_length=15,blank=True, default=False)
+    Sun = models.CharField(max_length=15,blank=True, default=False)
+    TEMP = models.CharField(max_length=15,blank=True, default='횟수', primary_key=True)
+
+
+
+
 
 '''
 class Total(DBView):

@@ -6,7 +6,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny   # 로그인 여부를 확인할 때 사용
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication    # JWT 인증을 확인하기 위해 사용
-
+from django.contrib.auth.hashers import check_password
 # from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
 
@@ -121,7 +121,7 @@ def singUp(request):
 
 
 # @csrf_exempt
-@api_view(['GET'])
+@api_view(['GET','PUT'])
 @permission_classes((IsAuthenticated, ))
 @authentication_classes((JSONWebTokenAuthentication,))
 def UserData(request):
@@ -154,11 +154,11 @@ def UserData(request):
             p1=data['new_password']
             p2=data['new_password_re']
             if p1==p2:
-                user.setpassword(p1)
+                user.set_password(p1)
                 user.save()
                 return Response(status=status.HTTP_200_OK)
             else:
-                return Response({'error': '새로운 비밀번호 확인 실패'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': '새로운 비밀번호 확인 실패'}, status=402)
         else:
                 return Response({'error': '현재 비밀번호 확인 실패'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -249,6 +249,50 @@ def CheckSTEMP(request):
         watch_set = student.watch_set
         try:
             institution_obj = institution.objects.get(qrcode=aim_qrcode)
+            watch = watch_set.get(Watch_institution=institution_obj)
+            aim_gps = (float(institution_obj.latitude), float(institution_obj.longitude))  # 기관좌표
+        except Exception:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        if haversine(request_gps, aim_gps) < float(institution_obj.gps_error):  
+            watch.stampStatus = True
+            times=time.time()
+            watch.create_Stamp_date=time.strftime('%a-%Y-%m-%d', time.localtime(times))
+            watch.create_Stamp_time=time.strftime('%H:%M', time.localtime(times))
+            watch.save()
+            watchListseri = WatchSerializer(watch)
+            updateUser(student)
+            return Response(watchListseri.data, status=status.HTTP_200_OK)
+        else:
+            return Response({'result': 'GPS 지역 위반'}, status=status.HTTP_202_ACCEPTED)
+
+
+# @csrf_exempt
+@api_view(['PUT'])
+@permission_classes((IsAuthenticated, ))
+@authentication_classes((JSONWebTokenAuthentication,))
+def CheckSTEMP_staff(request):
+    user = None
+    username = request.user.username
+    user = User.objects.get(username=username)
+    if not user.is_staff:
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+
+
+    if request.method == 'PUT':
+        data_request = JSONParser().parse(request)
+        request_gps = (float(data_request['latitude']), float(data_request['longitude']))  # 보낸 좌표
+
+        aim_institution_number=data_request['museumID']########
+        aim_user=User.objects.get(username=data_request['student_id'])#####
+
+        student =aim_user.student
+        watch_set = student.watch_set
+        try:
+
+            institution_obj = institution.objects.get(institution_number=aim_institution_number)########
+
             watch = watch_set.get(Watch_institution=institution_obj)
             aim_gps = (float(institution_obj.latitude), float(institution_obj.longitude))  # 기관좌표
         except Exception:
