@@ -44,7 +44,7 @@ class userCustomSerializer(serializers.ModelSerializer):
 class CommunitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Community
-        fields = ['id','author', 'title','text']
+        fields = ['id','author','text']
 
 class Watch_stampSerializer(serializers.ModelSerializer):
     class Meta:

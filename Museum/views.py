@@ -361,7 +361,9 @@ def updateUser(student):
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, ))
 @authentication_classes((JSONWebTokenAuthentication,))
-def Community_page(request, page):  # 5개씩페이지 page값 url로 받아오기
+def Community_page(request):  # 5개씩페이지 page값 url로 받아오기
+    data = JSONParser().parse(request)
+    page=int(data['page'])
     if request.method == 'GET':
         query_set = Community.objects.all()[(page - 1) * 5:]  # page번째 글 찾음
         if query_set.count() >= 5:  # 5개이상 글있으면 5개 글반환
@@ -383,16 +385,16 @@ def Community_object(request):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)
+        return Response(serializer.errors, status=400)
 
 
 @api_view(['PUT','DELETE'])
 @permission_classes((IsAuthenticated, ))
 @authentication_classes((JSONWebTokenAuthentication,))
-def Community_ud(request, id):  # 수정 혹은 삭제할 때는 id url로
-    obj = Community.objects.get(pk=id)  # 수정 혹은 삭제 될 데이터
+def Community_ud(request):  # 수정 혹은 삭제할 때는 id url로
+    data = JSONParser().parse(request)
+    obj = Community.objects.get(id=data['id'])  # 수정 혹은 삭제 될 데이터
     if request.method == 'PUT':  # PUT이면 수정
-        data = JSONParser().parse(request)
         serializer = CommunitySerializer(obj, data=data)  # 수정 obj도 넣어줌
         if serializer.is_valid():
             serializer.save()

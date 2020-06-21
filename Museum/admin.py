@@ -95,7 +95,8 @@ class StudentResource(resources.ModelResource):
         model = Student
         exclude = ('id',)
         import_id_fields = ('user',)
-        
+
+
 
 
 
@@ -111,21 +112,25 @@ class StudentAdmin(ExportMixin, admin.ModelAdmin):
         return obj.user.username
 
 
+
+
 class institutionAdmin(ImportExportMixin, admin.ModelAdmin):
     list_display = ['institution_number', 'quiz1','quiz2','quiz3']
     resource_class=institutionResource
     pass
 
-class watchAdmin(ImportExportMixin, admin.ModelAdmin):
+class watchAdmin(admin.ModelAdmin):
     def get_username(sef,obj):
         return obj.Watch_Student.user.username
+
     list_display = ['get_username','Watch_institution', 'quiz_answer','stampStatus']
     search_fields = ['Watch_Student__user__username','Watch_institution__institution_number', 'modify_date']
     list_filter =(('modify_date',DateRangeFilter),) # pip install django-admin-rangefilter, installed app ='rangefilter',
     pass
 
 class CommunityAdmin(ImportExportMixin, admin.ModelAdmin):
-    search_fields = ['author__user__username','id']
+    list_display = ['id','author','text']
+    search_fields = ['author','id','text']
     pass
 
 class joinkeyAdmin(ImportExportMixin, admin.ModelAdmin):
