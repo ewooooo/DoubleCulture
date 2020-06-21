@@ -55,7 +55,7 @@ class Community(models.Model):
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['id']
+        ordering = ['-created']
 
 
 class joinkey(models.Model):  # crontab 검색해서 주기마다 실행되는코드 짜기

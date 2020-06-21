@@ -346,7 +346,7 @@ def updateUser(student):
     watchset = student.watch_set
     if len( student.feeling) < 30:
         return False
-    standardStrLen = 10
+    standardStrLen = 15
     for w in watchset.all():
 
         if len(w.quiz_answer) < standardStrLen or not w.stampStatus:
@@ -358,58 +358,48 @@ def updateUser(student):
 
 
 
-@api_view(['GET'])
+@api_view(['GET','DELETE'])
 @permission_classes((IsAuthenticated, ))
 @authentication_classes((JSONWebTokenAuthentication,))
-def Community_page(request):  # 5개씩페이지 page값 url로 받아오기
-    data = JSONParser().parse(request)
-    page=int(data['page'])
+def Community_get_del(request, pk):  
     if request.method == 'GET':
-        query_set = Community.objects.all()[(page - 1) * 5:]  # page번째 글 찾음
-        if query_set.count() >= 5:  # 5개이상 글있으면 5개 글반환
-            query_set = query_set[:5]
+        data = JSONParser().parse(request)
+        page=pk
+        query_set = Community.objects.all()[(page - 1) * 20:]  # page번째 글 찾음
+        if query_set.count() >= 20:  # 20개이상 글있으면 20개 글반환
+            query_set = query_set[:20]
         serializer = CommunitySerializer(query_set, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    elif request.method == 'DELETE':  # DELETE면 삭제
+        user = None
+        username = request.user.username
+        user = User.objects.get(username=username)
+        data = JSONParser().parse(request)
+        try:
+            obj = Community.objects.get(id=str(pk))  # 수정 혹은 삭제 될 데이터
+        except Exception:
+            return Response(status=401)
+      
+        if obj.author ==username:
+            obj.delete()
+            return Response(status=204)
+        return Response(status=400)
+
 
 
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
 @authentication_classes((JSONWebTokenAuthentication,))
-def Community_object(request):
-    user = None
-    username = request.user.username
-    user = User.objects.get(username=username)
+def Community_post(request): 
     if request.method == 'POST':
+        user = None
+        username = request.user.username
+        user = User.objects.get(username=username)
         data = JSONParser().parse(request)
-        serializer = CommunitySerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=400)
-
-
-@api_view(['PUT','DELETE'])
-@permission_classes((IsAuthenticated, ))
-@authentication_classes((JSONWebTokenAuthentication,))
-def Community_ud(request):  # 수정 혹은 삭제할 때는 id url로
-    data = JSONParser().parse(request)
-    try:
-        obj = Community.objects.get(id=data['id'])  # 수정 혹은 삭제 될 데이터
-    except Exception:
-            return Response(status=404)
-    if request.method == 'PUT':  # PUT이면 수정
-        serializer = CommunitySerializer(obj, data=data)  # 수정 obj도 넣어줌
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=400)
-
-    elif request.method == 'DELETE':  # DELETE면 삭제
-        try:
-            obj.delete()
-            return Response(status=204)
-        except Exception:
-            return Response(status=400)
+        obj=Community.objects.create(author=username,text=data['text'])
+        obj.save
+        return Response(status=status.HTTP_201_CREATED)
 
 
 

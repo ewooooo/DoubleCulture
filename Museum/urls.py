@@ -12,7 +12,6 @@ urlpatterns = [
     path('stemp/', CheckSTEMP),
     path('stemp_staff/', CheckSTEMP_staff),
     path('feel/', feeling),
-    path('comu/', Community_object),# 글생성
-    path('comupage/', Community_page), #page당 5개씩 글 데이터 전송
-    path('comuud/', Community_ud), #글 수정 및 삭제
+    path('community_gd/<int:pk>/', Community_get_del),
+    path('community/', Community_post),
 ]
