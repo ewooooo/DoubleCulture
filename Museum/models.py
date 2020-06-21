@@ -24,7 +24,7 @@ class institution(models.Model):
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     CompleteState = models.BooleanField(default=False)  # 이수 여부
-    feeling= models.TextField(default='30Bytes 이상 입력하세요')
+    feeling= models.TextField(default='30글자 이상 입력하세요')
     created = models.DateTimeField(auto_now_add=True)
     modify_date = models.DateField(auto_now=True)  # 수정일
 
@@ -40,7 +40,7 @@ class Watch(models.Model):
     create_Stamp_date = models.CharField(max_length=15,null=True,default=False)
     create_Stamp_time = models.CharField(max_length=15,null=True,default=False)  # 스팸프 장소
 
-    quiz_answer = models.CharField(max_length=400, default=" ")  # 퀴즈에 대한 답변
+    quiz_answer = models.CharField(max_length=400, default="15글자 이상 입력하세요")  # 퀴즈에 대한 답변
 
 
     modify_date = models.DateField(auto_now=True)  # 수정일
