@@ -393,7 +393,10 @@ def Community_object(request):
 @authentication_classes((JSONWebTokenAuthentication,))
 def Community_ud(request):  # 수정 혹은 삭제할 때는 id url로
     data = JSONParser().parse(request)
-    obj = Community.objects.get(id=data['id'])  # 수정 혹은 삭제 될 데이터
+    try:
+        obj = Community.objects.get(id=data['id'])  # 수정 혹은 삭제 될 데이터
+    except Exception:
+            return Response(status=404)
     if request.method == 'PUT':  # PUT이면 수정
         serializer = CommunitySerializer(obj, data=data)  # 수정 obj도 넣어줌
         if serializer.is_valid():
@@ -402,8 +405,11 @@ def Community_ud(request):  # 수정 혹은 삭제할 때는 id url로
         return Response(serializer.errors, status=400)
 
     elif request.method == 'DELETE':  # DELETE면 삭제
-        obj.delete()
-        return Response(status=204)
+        try:
+            obj.delete()
+            return Response(status=204)
+        except Exception:
+            return Response(status=400)
 
 
 
