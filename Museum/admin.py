@@ -128,8 +128,8 @@ class watchAdmin(admin.ModelAdmin):
     list_filter =(('modify_date',DateRangeFilter),) # pip install django-admin-rangefilter, installed app ='rangefilter',
     pass
 
-class CommunityAdmin(ImportExportMixin, admin.ModelAdmin):
-    list_display = ['id','author','text']
+class CommunityAdmin(admin.ModelAdmin):
+    list_display = ['created','author','text']
     search_fields = ['author','id','text']
     pass
 

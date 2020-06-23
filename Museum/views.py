@@ -363,7 +363,6 @@ def updateUser(student):
 @authentication_classes((JSONWebTokenAuthentication,))
 def Community_get_del(request, pk):  
     if request.method == 'GET':
-        data = JSONParser().parse(request)
         page=pk
         query_set = Community.objects.all()[(page - 1) * 20:]  # page번째 글 찾음
         if query_set.count() >= 20:  # 20개이상 글있으면 20개 글반환
@@ -375,7 +374,6 @@ def Community_get_del(request, pk):
         user = None
         username = request.user.username
         user = User.objects.get(username=username)
-        data = JSONParser().parse(request)
         try:
             obj = Community.objects.get(id=str(pk))  # 수정 혹은 삭제 될 데이터
         except Exception:
