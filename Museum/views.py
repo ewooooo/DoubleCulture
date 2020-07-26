@@ -16,6 +16,7 @@ from django.contrib.auth.models import User     # 회원가입 필요
 
 from haversine import haversine
 import time
+import json
 
 # from django.contrib.auth import authenticate    # 아이디 비번 확인을 위해 사용
 #from django.core.exceptions import ObjectDoesNotExist   # object 접근 에러처리
@@ -398,6 +399,58 @@ def Community_post(request):
         obj=Community.objects.create(author=username,text=data['text'])
         obj.save
         return Response(status=status.HTTP_201_CREATED)
+
+def check_quiz(watch):
+    if len(watch.quiz_answer) > 15:
+        return True
+    else:
+        return False
+
+def check_stamp(watch):
+    if watch.stampStatus:
+        return True
+    else:
+        return False
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
+@authentication_classes((JSONWebTokenAuthentication,))
+def stampstatus(request):
+    user = None
+    username = request.user.username
+    user = User.objects.get(username=username)
+    student =user.student
+    updateUser(student)
+    if request.method == 'GET':
+        watchset = student.watch_set.all()
+        #try:
+        lst=[]
+        for muse in watchset:
+           name=muse.Watch_institution.institution_number
+           stamp=check_stamp(muse)
+           quiz=check_quiz(muse)
+           lst.append({'museum':name,'quiz':quiz, 'stamp':stamp})
+        #except Exception:
+        #    return Response(status=404)
+
+
+        feeling=None
+        if len(student.feeling)>30:
+            feeling=True
+        else:
+            feeling=False
+        CompleteState=student.CompleteState
+        lst.append({'feeling':feeling,'CompleteState':CompleteState})
+
+
+
+        return Response(lst,
+                         status=status.HTTP_200_OK)
+
+
+
+
+
 
 
 

@@ -14,4 +14,5 @@ urlpatterns = [
     path('feel/', feeling),
     path('community_gd/<int:pk>/', Community_get_del),
     path('community/', Community_post),
+    path('final/', stampstatus),
 ]

@@ -19,7 +19,7 @@ class institutionSerializer(serializers.ModelSerializer):
 class WatchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Watch
-        fields = ['stampStatus', 'quiz_answer']
+        fields = ['create_Stamp_date','stampStatus', 'quiz_answer']
 
 
 # class userSerializer(serializers.ModelSerializer):
@@ -44,7 +44,7 @@ class userCustomSerializer(serializers.ModelSerializer):
 class CommunitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Community
-        fields = ['id','author','text']
+        fields = ['created','id','author','text']
 
 class Watch_stampSerializer(serializers.ModelSerializer):
     class Meta:
