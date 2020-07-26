@@ -363,12 +363,20 @@ def updateUser(student):
 @permission_classes((IsAuthenticated, ))
 @authentication_classes((JSONWebTokenAuthentication,))
 def Community_get_del(request, pk):  
+    user = None
+    username = request.user.username
+    user = User.objects.get(username=username)
     if request.method == 'GET':
         page=pk
         query_set = Community.objects.all()[(page - 1) * 20:]  # page번째 글 찾음
         if query_set.count() >= 20:  # 20개이상 글있으면 20개 글반환
             query_set = query_set[:20]
         serializer = CommunitySerializer(query_set, many=True)
+        for x in serializer.data:
+            if x['author'] != str(user):
+                obj=str(x['author'])
+                obj=obj[:len(obj)-3]+'***'
+                x['author']=obj
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     elif request.method == 'DELETE':  # DELETE면 삭제
@@ -423,15 +431,15 @@ def stampstatus(request):
     updateUser(student)
     if request.method == 'GET':
         watchset = student.watch_set.all()
-        #try:
-        lst=[]
-        for muse in watchset:
-           name=muse.Watch_institution.institution_number
-           stamp=check_stamp(muse)
-           quiz=check_quiz(muse)
-           lst.append({'museum':name,'quiz':quiz, 'stamp':stamp})
-        #except Exception:
-        #    return Response(status=404)
+        try:
+            lst=[]
+            for muse in watchset:
+                name=muse.Watch_institution.institution_number
+                stamp=check_stamp(muse)
+                quiz=check_quiz(muse)
+                lst.append({'museum':name,'quiz':quiz, 'stamp':stamp})
+        except Exception:
+            return Response(status=404)
 
 
         feeling=None
