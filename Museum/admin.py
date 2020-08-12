@@ -102,6 +102,14 @@ class StudentResource(resources.ModelResource):
 
 
 class StudentAdmin(ExportMixin, admin.ModelAdmin):
+    def has_add_permission(self, request):
+        return False
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        if 'delete_selected' in actions:
+            del actions['delete_selected']
+        return actions
     resource_class=StudentResource
     list_display = ['get_id','name' ,'CompleteState','feeling']
     search_fields = ['created', 'user__username']
@@ -113,13 +121,40 @@ class StudentAdmin(ExportMixin, admin.ModelAdmin):
 
 
 
+class myUserCreationForm_institutution(forms.ModelForm):
+    class Meta:
+        model = institution
+        fields = ('quiz1','quiz2', 'quiz3', 'qrcode','latitude','longitude','gps_error')
 
-class institutionAdmin(ImportExportMixin, admin.ModelAdmin):
+class institutionAdmin( admin.ModelAdmin):
+    change_form = myUserCreationForm_institutution
+    def get_form(self, request, obj=None, **kwargs):
+        if not obj:
+            self.form = self.add_form
+        else:
+            self.form = self.change_form
+
+        return super(institutionAdmin, self).get_form(request, obj, **kwargs)
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
     list_display = ['institution_number', 'quiz1','quiz2','quiz3']
     resource_class=institutionResource
     pass
 
 class watchAdmin(admin.ModelAdmin):
+    def has_add_permission(self, request):
+        return False
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        if 'delete_selected' in actions:
+            del actions['delete_selected']
+        return actions
+
     def get_username(sef,obj):
         return obj.Watch_Student.user.username
 
@@ -129,11 +164,18 @@ class watchAdmin(admin.ModelAdmin):
     pass
 
 class CommunityAdmin(admin.ModelAdmin):
+    def has_add_permission(self, request):
+        return False
     list_display = ['created','author','text']
     search_fields = ['author','id','text']
     pass
 
 class joinkeyAdmin(ImportExportMixin, admin.ModelAdmin):
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
     pass
 
 #class TotalAdmin(ImportExportMixin, admin.ModelAdmin):
@@ -143,6 +185,11 @@ class joinkeyAdmin(ImportExportMixin, admin.ModelAdmin):
 
 
 class dayAdmin(admin.ModelAdmin):
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
     list_display = ['number','Mon','Tue' ,'Wed','Thu','Fri','Sat','Sun']
    
     def number(self,obj):
