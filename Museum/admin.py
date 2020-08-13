@@ -7,7 +7,7 @@ from import_export.widgets import ForeignKeyWidget
 from import_export import resources, fields,widgets
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
-
+from django.contrib.auth.models import Group
 
 class institutionResource(resources.ModelResource):
 
@@ -145,7 +145,7 @@ class institutionAdmin( admin.ModelAdmin):
     resource_class=institutionResource
     pass
 
-class watchAdmin(admin.ModelAdmin):
+class watchAdmin(ExportMixin,admin.ModelAdmin):
     def has_add_permission(self, request):
         return False
 
@@ -163,14 +163,14 @@ class watchAdmin(admin.ModelAdmin):
     list_filter =(('modify_date',DateRangeFilter),) # pip install django-admin-rangefilter, installed app ='rangefilter',
     pass
 
-class CommunityAdmin(admin.ModelAdmin):
+class CommunityAdmin(ExportMixin,admin.ModelAdmin):
     def has_add_permission(self, request):
         return False
     list_display = ['created','author','text']
     search_fields = ['author','id','text']
     pass
 
-class joinkeyAdmin(ImportExportMixin, admin.ModelAdmin):
+class joinkeyAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
         return False
 
@@ -240,4 +240,5 @@ admin.site.register(joinkey,joinkeyAdmin)
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
 admin.site.register(day, dayAdmin)
+admin.site.unregister(Group)
 
