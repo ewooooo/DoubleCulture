@@ -54,7 +54,7 @@ App(flutter)
 
 - https://github.com/ewooooo/DoubleCultureAPP
 
-Admin-App(fluuter)
+Admin-App(flutter)
 
 - https://github.com/ewooooo/DoubleCulture_admin
 
